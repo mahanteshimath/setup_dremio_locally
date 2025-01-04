@@ -110,9 +110,12 @@ networks:
    ```bash
    docker-compose up -d
    ```
-   ![alt text](image.png)
+![alt text](image.png)
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
 
-   
+
 3. Verify that the services are running:
    ```bash
    docker ps
@@ -185,7 +188,7 @@ networks:
    ```bash
    docker exec -it superset superset init
    ```
-2. Open Superset at [http://localhost:8088](http://localhost:8088), log in, and go to **Settings > Database Connections**.
+2. Open Superset at [http://localhost:8088](http://localhost:8088), log in using user admin :pass :admin, and go to **Settings > Database Connections**.
 3. Add a new database:
    - Select **Other** as the type.
    - Enter the connection string (replace `USERNAME` and `PASSWORD` with Dremio credentials):

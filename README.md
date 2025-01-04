@@ -92,6 +92,8 @@ networks:
   iceberg:
 ```
 
+
+
 ### Explanation of Services:
 - **Nessie**: Provides version control for data, useful for tracking data lineage and historical states.
 - **MinIO**: Acts as an S3-compatible object storage, holding data buckets that Dremio will use as data sources.
@@ -108,6 +110,9 @@ networks:
    ```bash
    docker-compose up -d
    ```
+   ![alt text](image.png)
+
+   
 3. Verify that the services are running:
    ```bash
    docker ps

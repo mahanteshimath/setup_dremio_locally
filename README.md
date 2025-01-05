@@ -132,7 +132,7 @@ networks:
 - **Dremio**: [http://localhost:9047](http://localhost:9047) (log in or create an admin account).
 - **MinIO**: [http://localhost:9001](http://localhost:9001) (username: `admin`, password: `password`).
 - **Superset**: [http://localhost:8088](http://localhost:8088) (username: `admin`, password: `admin`).
-- **DataNotebook**: [http://localhost:8080](http://localhost:8080).
+- **DataNotebook**: [http://localhost:8888/lab?](http://localhost:8888/lab?).
 
 ---
 
@@ -188,7 +188,7 @@ networks:
    ```bash
    docker exec -it superset superset init
    ```
-2. Open Superset at [http://localhost:8088](http://localhost:8088), log in using user admin :pass :admin, and go to **Settings > Database Connections**.
+2. Open Superset at [http://localhost:8088](http://localhost:8888), log in using user admin :pass :admin, and go to **Settings > Database Connections**.
 3. Add a new database:
    - Select **Other** as the type.
    - Enter the connection string (replace `USERNAME` and `PASSWORD` with Dremio credentials):

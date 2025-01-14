@@ -69,6 +69,27 @@ def query_data(query):
 # Sidebar options
 options = ["NFL DataModel","Data Analysis","Top Performing Players", "Team Performance", "Play Formation Analysis","2024-25 NFL Analysis"]
 selected_option = st.sidebar.selectbox("Select for analysis", options)
+with st.sidebar:
+    st.markdown("""
+    ### How to Use This App:
+
+    1. **Select Analysis Type** from the dropdown menu:
+    - NFL DataModel
+    - Kaggle Data Analysis(2022-23 Season Analysis)
+    - 2024-25 NFL Prediction
+
+    2. **View Results**:
+    - Champions are predicted based on:
+        - Win-loss records
+        - Points scored/allowed
+        - Home/Away performance
+        - Historical matchup data
+    - Confidence scores shown as percentages
+    - Interactive visualizations available
+
+    """)
+    st.markdown("[![Foo](https://cdn2.iconfinder.com/data/icons/social-media-2285/512/1_Linkedin_unofficial_colored_svg-48.png)](https://www.linkedin.com/in/mahantesh-hiremath/) Connect me.")   
+
 
 
 if selected_option == "NFL DataModel":
@@ -362,7 +383,7 @@ elif selected_option == "Data Analysis":
 
     st.markdown("-------")
 
-        # Load game trends data
+    # Load game trends data
     game_trends_query = """
     SELECT 
         gameDatetime,
@@ -605,7 +626,9 @@ elif selected_option == "Play Formation Analysis":
         st.pyplot(fig)
 elif selected_option == "2024-25 NFL Analysis":
     st.subheader("2024-25 NFL Analysis and Champion Prediction")
+    st.markdown("-------")
     st.subheader("Data taken from https://fixturedownload.com/Results/nfl-2024")
+    st.markdown("-------")
     query = """select * from lake."NF_DATA_2024.csv" """
     nfl_data = query_data(query)
     
@@ -673,7 +696,7 @@ elif selected_option == "2024-25 NFL Analysis":
     plt.title('Team Win Rates (2024 Season)')
     plt.ylabel('Win Rate')
     st.pyplot(fig)
-
+    st.markdown("-------")
     # Data preparation and model training
     try:
         # Prepare features (X) and target (y)
@@ -704,12 +727,12 @@ elif selected_option == "2024-25 NFL Analysis":
         y_pred = model.predict(X_test_scaled)
         accuracy = model.score(X_test_scaled, y_test)
 
-        st.write(f"Model Accuracy: {accuracy:.2f}")
+        #st.write(f"Model Accuracy: {accuracy:.2f}")
 
     except Exception as e:
         st.error(f"Error in model training: {str(e)}")
         st.write("Please check your data preparation steps")
-    st.markdown("-------")
+    # st.markdown("-------")
     # Predicting Champions
     # Define NFL conference mappings with full team names
     nfl_conferences = {
@@ -726,6 +749,7 @@ elif selected_option == "2024-25 NFL Analysis":
             'Arizona Cardinals', 'Los Angeles Rams', 'San Francisco 49ers', 'Seattle Seahawks'
         ]
     }
+
 
     col1, col2 = st.columns(2)
     with col1:
@@ -798,8 +822,8 @@ elif selected_option == "2024-25 NFL Analysis":
         return team_metrics
 
     metrics = calculate_team_metrics(nfl_data)
-
-    st.subheader("Champion Selection Analysis")
+    st.markdown("-------")
+    st.title("Champion Selection Analysis")
     for team in [nfc_champion, afc_champion, overall_champion]:
         if team in metrics:
             st.write(f"\n{team} Analysis:")

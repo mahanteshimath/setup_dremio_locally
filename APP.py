@@ -25,7 +25,8 @@ try:
     # Train a simple model (you might want to use your own trained model)
     model = RandomForestClassifier(random_state=42)
     # Assuming champion_labels is a binary array indicating champion status
-    champion_labels = np.zeros(len(team_stats_df))  # Replace with actual labels
+    # Replace with actual labels
+    champion_labels = np.array([1 if team in ['TeamA', 'TeamB'] else 0 for team in team_stats_df.index])
     model.fit(X_scaled, champion_labels)
     
     # Sidebar predictions

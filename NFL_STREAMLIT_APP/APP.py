@@ -4,9 +4,13 @@ from dremio_simple_query.connect import DremioConnection
 import requests
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 import time
 import streamlit.components.v1 as components
 import plotly.express as px
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
 
 st.logo(
     image="https://upload.wikimedia.org/wikipedia/en/a/a2/National_Football_League_logo.svg",
@@ -608,5 +612,207 @@ elif selected_option == "2024-25 NFL Analysis":
     if not nfl_data.empty:
         # Display the raw data
         st.dataframe(nfl_data)
+    # Data Preprocessing
+    nfl_data['Date'] = pd.to_datetime(
+        nfl_data['Date'], 
+        format='%d/%m/%Y %H:%M',  # Updated format to include time
+        errors='coerce'
+    )
+
+    # Filter data up to Jan 14, 2025
+    nfl_data = nfl_data[nfl_data['Date'] <= '2025-01-14']
+
+
+    # Extract scores from the Result column
+    nfl_data[['Home Score', 'Away Score']] = nfl_data['Result'].str.split(' - ', expand=True).astype(float)
+
+    # Determine match outcomes
+    nfl_data['Home Win'] = nfl_data['Home Score'] > nfl_data['Away Score']
+    nfl_data['Away Win'] = nfl_data['Home Score'] < nfl_data['Away Score']
+    nfl_data['Draw'] = nfl_data['Home Score'] == nfl_data['Away Score']
+
+    # Aggregate performance metrics per team
+    home_stats = nfl_data.groupby('Home Team').agg({
+        'Home Win': 'sum',
+        'Away Win': 'sum',
+        'Draw': 'sum',
+        'Home Score': 'mean',
+        'Away Score': 'mean'
+    }).rename(columns={
+        'Home Win': 'Home Wins',
+        'Away Win': 'Home Losses',
+        'Draw': 'Home Draws'
+    })
+
+    away_stats = nfl_data.groupby('Away Team').agg({
+        'Home Win': 'sum',
+        'Away Win': 'sum',
+        'Draw': 'sum',
+        'Home Score': 'mean',
+        'Away Score': 'mean'
+    }).rename(columns={
+        'Home Win': 'Away Losses',
+        'Away Win': 'Away Wins',
+        'Draw': 'Away Draws'
+    })
+
+    team_stats = home_stats.merge(away_stats, left_index=True, right_index=True, how='outer').fillna(0)
+
+    # Feature engineering for predictions
+    team_stats['Total Wins'] = team_stats['Home Wins'] + team_stats['Away Wins']
+    team_stats['Total Losses'] = team_stats['Home Losses'] + team_stats['Away Losses']
+    team_stats['Win Rate'] = team_stats['Total Wins'] / (team_stats['Total Wins'] + team_stats['Total Losses'])
+
+    # Visualization
+    st.subheader("Team Win Rates (2024 Season)")
+    fig, ax = plt.subplots(figsize=(12, 8))
+    sns.barplot(x=team_stats.sort_values('Win Rate', ascending=False).index,
+                y=team_stats.sort_values('Win Rate', ascending=False)['Win Rate'],
+                palette='coolwarm', ax=ax)
+    plt.xticks(rotation=90)
+    plt.title('Team Win Rates (2024 Season)')
+    plt.ylabel('Win Rate')
+    st.pyplot(fig)
+
+    # Data preparation and model training
+    try:
+        # Prepare features (X) and target (y)
+        features = ['Home Score', 'Away Score']  # Add more relevant features
+        X = nfl_data[features]
+        y = nfl_data['Home Win']  # Target variable (1 for home win, 0 for away win)
+
+        # Handle missing values
+        X = X.fillna(X.mean())
+
+        # Split the data
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, 
+            test_size=0.2, 
+            random_state=42
+        )
+
+        # Scale the features
+        scaler = StandardScaler()
+        X_train_scaled = scaler.fit_transform(X_train)
+        X_test_scaled = scaler.transform(X_test)
+
+        # Train the model
+        model = RandomForestClassifier(random_state=42)
+        model.fit(X_train_scaled, y_train)
+
+        # Make predictions
+        y_pred = model.predict(X_test_scaled)
+        accuracy = model.score(X_test_scaled, y_test)
+
+        st.write(f"Model Accuracy: {accuracy:.2f}")
+
+    except Exception as e:
+        st.error(f"Error in model training: {str(e)}")
+        st.write("Please check your data preparation steps")
+    st.markdown("-------")
+    # Predicting Champions
+    # Define NFL conference mappings with full team names
+    nfl_conferences = {
+        'AFC': [
+            'Buffalo Bills', 'Miami Dolphins', 'New England Patriots', 'New York Jets',
+            'Baltimore Ravens', 'Cincinnati Bengals', 'Cleveland Browns', 'Pittsburgh Steelers',
+            'Houston Texans', 'Indianapolis Colts', 'Jacksonville Jaguars', 'Tennessee Titans',
+            'Denver Broncos', 'Kansas City Chiefs', 'Las Vegas Raiders', 'Los Angeles Chargers'
+        ],
+        'NFC': [
+            'Dallas Cowboys', 'New York Giants', 'Philadelphia Eagles', 'Washington Commanders',
+            'Chicago Bears', 'Detroit Lions', 'Green Bay Packers', 'Minnesota Vikings',
+            'Atlanta Falcons', 'Carolina Panthers', 'New Orleans Saints', 'Tampa Bay Buccaneers',
+            'Arizona Cardinals', 'Los Angeles Rams', 'San Francisco 49ers', 'Seattle Seahawks'
+        ]
+    }
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("AFC Teams")
+
+        nfc_teams = [team for team in nfl_data['Home Team'].unique() if team in nfl_conferences['NFC']]
+        st.dataframe(pd.DataFrame(nfc_teams, columns=['Team']))
+    with col2:
+        st.subheader("NFC Teams")
+        afc_teams = [team for team in nfl_data['Home Team'].unique() if team in nfl_conferences['AFC']]
+        st.dataframe(pd.DataFrame(afc_teams, columns=['Team']))
+
+    st.markdown("-------")
+    st.title("National, American and Overall Champions Prediction")
+
+    # Champion prediction logic
+    if nfc_teams:
+        nfc_champion = team_stats.loc[nfc_teams].sort_values('Win Rate', ascending=False).index[0]
+        st.write(f"Predicted National Champion Pick (NFC) 🏆: {nfc_champion}")
+    else:
+        st.warning("No NFC teams found in the dataset")
+
+    if afc_teams:
+        afc_champion = team_stats.loc[afc_teams].sort_values('Win Rate', ascending=False).index[0]
+        st.write(f"Predicted American Champion Pick (AFC) 🏆: {afc_champion}")
+    else:
+        st.warning("No AFC teams found in the dataset")
+
+    if not team_stats.empty:
+        overall_champion = team_stats.sort_values('Win Rate', ascending=False).index[0]
+        st.write(f"Predicted Overall Champion Pick 🌍: {overall_champion}")
+    else:
+        st.warning("No teams found in the dataset")
+
+    def calculate_team_metrics(nfl_data):
+        team_metrics = {}
         
+        for team in nfl_data['Home Team'].unique():
+            # Win-Loss Record
+            home_games = nfl_data[nfl_data['Home Team'] == team]
+            away_games = nfl_data[nfl_data['Away Team'] == team]
+            
+            wins = len(home_games[home_games['Home Score'] > home_games['Away Score']]) + \
+                   len(away_games[away_games['Away Score'] > away_games['Home Score']])
+            
+            total_games = len(home_games) + len(away_games)
+            win_percentage = wins / total_games if total_games > 0 else 0
+            
+            # Points Analysis
+            points_scored = home_games['Home Score'].sum() + away_games['Away Score'].sum()
+            points_allowed = home_games['Away Score'].sum() + away_games['Home Score'].sum()
+            point_differential = points_scored - points_allowed
+            
+            # Calculate confidence score (0-100)
+            confidence_score = (
+                (win_percentage * 50) +  # Win percentage contributes 50%
+                (point_differential / 100 * 30) +  # Point differential contributes 30%
+                (len([x for x in home_games['Home Score'] if x > 20]) / len(home_games) * 20)  # High scoring games 20%
+            )
+            
+            team_metrics[team] = {
+                'wins': wins,
+                'win_percentage': win_percentage,
+                'points_scored': points_scored,
+                'points_allowed': points_allowed,
+                'point_differential': point_differential,
+                'confidence_score': min(100, confidence_score)
+            }
         
+        return team_metrics
+
+    metrics = calculate_team_metrics(nfl_data)
+
+    st.subheader("Champion Selection Analysis")
+    for team in [nfc_champion, afc_champion, overall_champion]:
+        if team in metrics:
+            st.write(f"\n{team} Analysis:")
+            st.write(f"- Win Percentage: {metrics[team]['win_percentage']:.2%}")
+            st.write(f"- Total Wins: {metrics[team]['wins']}")
+            st.write(f"- Point Differential: {metrics[team]['point_differential']}")
+            st.write(f"- Confidence Score: {metrics[team]['confidence_score']:.1f}%")
+
+    fig = px.bar(
+        x=list(metrics.keys()),
+        y=[m['confidence_score'] for m in metrics.values()],
+        title="Team Confidence Scores",
+        labels={'x': 'Team', 'y': 'Confidence Score (%)'}
+    )
+    st.plotly_chart(fig)
+

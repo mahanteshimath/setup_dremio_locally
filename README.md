@@ -1,3 +1,26 @@
+
+# What is Dremio?
+
+Dremio is a data lakehouse platform that allows users to access, analyze, and visualize data from various sources in real time. It's an open source Data-as-a-Service (DaaS) platform that's powered by Apache Iceberg. 
+Features: 
+
+• Query engine: Dremio's query engine allows users to directly query petabyte-scale cloud data lake storage
+• Self-service analytics: Dremio allows data teams to deliver self-service analytics  
+• Interactive analytics: Dremio supports ad-hoc and interactive analytics  
+• Security: Dremio provides robust security, including data level security 
+• Customizable interface: Dremio offers a customizable interface  
+
+•Benefits: Eliminates massive data transfers,    Mitigates security risks, Accelerates AI and analytics initiatives, and Dramatically reduces costs.Use cases: Business intelligence and Creating and consuming data products.   
+-------
+# What Dremio recommend ?
+![alt text](image-4.png)
+
+
+
+-----
+
+
+
 # Setting Up a Data Analytics Environment with Docker and Docker Compose
 
 ## Step 1: Understanding Docker and Docker Compose

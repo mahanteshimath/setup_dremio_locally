@@ -231,5 +231,5 @@ To stop and clean up the environment, run:
 ```bash
 docker-compose down -v
 ```
-This will remove all containers and volumes, giving you a clean slate for the next session.
+This will remove all containers and volumes, giving you a clean slate for the next session. 
 

@@ -233,3 +233,4 @@ docker-compose down -v
 ```
 This will remove all containers and volumes, giving you a clean slate for the next session. 
 
+For more information, please refer to this tutorial: https://www.youtube.com/watch?v=2_hYwyF1A2A&list=LL

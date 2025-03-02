@@ -4,7 +4,7 @@
 Dremio is a data lakehouse platform that allows users to access, analyze, and visualize data from various sources in real time. It's an open source Data-as-a-Service (DaaS) platform that's powered by Apache Iceberg. 
 Features: 
 
-• Query engine: Dremio's query engine allows users to directly query petabyte-scale cloud data lake storage
+• Query engine descripton: Dremio's query engine allows users to directly query petabyte-scale cloud data lake storage
 • Self-service analytics: Dremio allows data teams to deliver self-service analytics  
 • Interactive analytics: Dremio supports ad-hoc and interactive analytics  
 • Security: Dremio provides robust security, including data level security 
